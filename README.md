@@ -194,7 +194,7 @@ Estas dependencias se pueden instalar mediante el archivo `requirements.txt` men
     trainer.train()
     ```
 
-### Transcripción de Audio utilizando Checkpoints
+### Transcripción de Audio utilizando los datos nuevos
 
 1. **Cargar las rutas de los checkpoints**
     ```python

@@ -18,6 +18,7 @@ El objetivo de este proyecto es ajustar el modelo Whisper para transcribir audio
     git clone "Repo"
     cd "repo"
     ```
+
 2. **Descargar y preparar los datasets**
 
     Coloca los archivos `train.csv` y `test.csv` en el directorio del proyecto.
@@ -31,10 +32,14 @@ Asegúrate de tener instaladas las siguientes dependencias en tu entorno de Pyth
 - `evaluate`
 - `pandas`
 - `torch`
+- `soundfile`
+- `collections`
 
 Estas dependencias se pueden instalar mediante el archivo `requirements.txt` mencionado en la sección de instalación.
 
 ## Uso
+
+### Entrenamiento del Modelo
 
 1. **Cargar los datasets**
     ```python
@@ -188,6 +193,119 @@ Estas dependencias se pueden instalar mediante el archivo `requirements.txt` men
 
     trainer.train()
     ```
+
+### Transcripción de Audio utilizando Checkpoints
+
+1. **Cargar las rutas de los checkpoints**
+    ```python
+    checkpoint_paths = [
+        r"Path correspondiente",
+        r"Path correspondiente",
+        r"Path correspondiente",
+        r"Path correspondiente"
+    ]
+    ```
+
+2. **Cargar el procesador original**
+    ```python
+    from transformers import WhisperProcessor
+
+    processor = WhisperProcessor.from_pretrained("openai/whisper-base")
+    ```
+
+3. **Definir la función de transcripción**
+    ```python
+    import soundfile as sf
+    import torch
+
+    def transcribe_audio(model, file_path):
+        # Cargar el audio
+        audio_input, _ = sf.read(file_path)
+
+        # Procesar el audio
+        inputs = processor(audio_input, sampling_rate=16000, return_tensors="pt")
+
+        # Generar la transcripción
+        with torch.no_grad():
+            predicted_ids = model.generate(inputs["input_features"], output_scores=True, return_dict_in_generate=True)
+            logits = predicted_ids.scores[0]
+            confidences = torch.nn.functional.softmax(logits, dim=-1)
+            confidence_score = confidences.max().item()
+
+        # Decodificar la transcripción
+        transcription = processor.batch_decode(predicted_ids.sequences, skip_special_tokens=True)[0]
+        return transcription, confidence_score
+    ```
+
+4. **Ejemplo de uso con un nuevo archivo de audio**
+    ```python
+    new_audio_path = r"Path correspondiente"
+    ```
+
+5. **Obtener transcripciones de cada checkpoint y almacenarlas con sus puntuaciones de confianza**
+    ```python
+    from transformers import WhisperForConditionalGeneration
+
+    transcriptions_with_confidences = []
+
+    for checkpoint_path in checkpoint_paths:
+        # Cargar el modelo finetuned desde la carpeta del checkpoint
+        model = WhisperForConditionalGeneration.from_pretrained(checkpoint_path)
+        print(f"Modelo cargado desde {checkpoint_path}")
+
+        # Obtener la transcripción y la puntuación de confianza
+        transcription, confidence_score = transcribe_audio(model, new_audio_path)
+        transcriptions_with_confidences.append((transcription, confidence_score))
+        print(f"Transcription from {checkpoint_path}: {transcription} with confidence score {confidence_score}")
+    ```
+
+6. **Combinar las transcripciones utilizando una estrategia de votación ponderada**
+    ```python
+    from collections import Counter
+
+    combined_transcriptions = Counter()
+
+    for transcription, confidence_score in transcriptions_with_confidences:
+        combined_transcriptions[transcription] += confidence_score
+
+    # Seleccionar la transcripción con la puntuación más alta
+    best_transcription = combined_transcriptions.most_common(1)[0][0]
+
+    # Mostrar el resultado final
+    print("Final transcription result:", best_transcription)
+    ```
+## Dataset Utilizado
+
+El dataset utilizado para este proyecto es el TEDx Spanish Corpus, que se puede descargar desde el siguiente [enlace](https://www.openslr.org/67/).
+
+**Información del dataset:**
+
+- **Identificador**: SLR67
+- **Resumen**: Datos en español tomados de las charlas TEDx.
+- **Categoría**: Speech
+- **Licencia**: Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)
+- **Descargas**: 
+  - [tedx_spanish_corpus.tgz (2.3G)](https://www.openslr.org/resources/67/tedx_spanish_corpus.tgz) (Mirrors: [US](https://www.openslr.org/resources/67/tedx_spanish_corpus.tgz) [EU](https://www.openslr.org/resources/67/tedx_spanish_corpus.tgz) [CN](https://www.openslr.org/resources/67/tedx_spanish_corpus.tgz))
+
+**Acerca de este recurso:**
+
+El TEDx Spanish Corpus es un corpus de género desequilibrado de 24 horas de duración. Contiene discursos espontáneos de varios expositores en eventos TEDx; la mayoría son hombres. Las transcripciones se presentan en minúsculas sin signos de puntuación.
+
+El proceso de recopilación de datos fue desarrollado en parte por el programa de servicio social "Desarrollo de Tecnologías del Habla" que depende de la Universidad Nacional Autónoma de México y en parte por el proyecto CIEMPIESS-UNAM.
+
+Agradecimientos especiales al equipo de TED-Talks por permitirnos compartir este dataset.
+
+**Cita del dataset:**
+```bibtex
+@misc{mena_2019,
+	title = "{TEDx Spanish Corpus. Audio and transcripts in Spanish taken from the TEDx Talks; shared under the CC BY-NC-ND 4.0 license}",
+	author = "Hernandez-Mena, Carlos D.",
+	howpublished = "Web Download",
+	institution = "Universidad Nacional Autonoma de Mexico",
+	location = "Mexico City",
+	year = "2019"
+}
+
 
 ## Configuración del Sistema
 

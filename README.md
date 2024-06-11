@@ -315,7 +315,7 @@ Este programa se ejecutó inicialmente en la siguiente configuración de hardwar
 - **Sistema Operativo**: 64-bit, x64-based processor
 - **GPU**: NVIDIA GeForce RTX 3060
 - **Almacenamiento**: 1.5 TB
-- - **Sistema operativo**: Windows
+- **Sistema operativo**: Windows
 
 ## Contribución
 

@@ -18,13 +18,7 @@ El objetivo de este proyecto es ajustar el modelo Whisper para transcribir audio
     git clone "Repo"
     cd "repo"
     ```
-
-2. **Instalar dependencias**
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-3. **Descargar y preparar los datasets**
+2. **Descargar y preparar los datasets**
 
     Coloca los archivos `train.csv` y `test.csv` en el directorio del proyecto.
 

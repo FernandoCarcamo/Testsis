@@ -296,7 +296,7 @@ El proceso de recopilación de datos fue desarrollado en parte por el programa d
 Agradecimientos especiales al equipo de TED-Talks por permitirnos compartir este dataset.
 
 **Cita del dataset:**
-```bibtex
+
 @misc{mena_2019,
 	title = "{TEDx Spanish Corpus. Audio and transcripts in Spanish taken from the TEDx Talks; shared under the CC BY-NC-ND 4.0 license}",
 	author = "Hernandez-Mena, Carlos D.",
@@ -305,7 +305,6 @@ Agradecimientos especiales al equipo de TED-Talks por permitirnos compartir este
 	location = "Mexico City",
 	year = "2019"
 }
-
 
 ## Configuración del Sistema
 
